@@ -1,8 +1,8 @@
 import express from "express";
-import filmsRouter from "./filmsRouter";
+import moviesRouter from "./moviesRouter";
 
 const router = express.Router();
 
-router.use("/films", filmsRouter);
+router.use("/movies", moviesRouter);
 
 export default router;

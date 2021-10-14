@@ -1,18 +1,18 @@
-import { Film } from "./filmsService";
+import { Movie } from "./moviesService";
 
 export class Actor {
   id: string;
   firstName: string;
   lastName: string;
   pictureUrl: string;
-  starredIn: Film[];
+  starredIn: Movie[];
 
   constructor(
     id: string,
     firstName: string,
     lastName: string,
     pictureUrl: string,
-    starredIn: Film[]
+    starredIn: Movie[]
   ) {
     this.id = id;
     this.firstName = firstName;
