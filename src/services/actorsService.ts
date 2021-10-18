@@ -1,4 +1,13 @@
+import actorsQuery from "./../bigquery/actorsQuery";
 import { Movie } from "./moviesService";
+
+export const actorsService = {
+  getActorsFromDatabase: async (): Promise<Actor[]> => {
+    const actors: Actor[] = await actorsQuery.getActors();
+
+    return actors;
+  },
+};
 
 export class Actor {
   id: string;

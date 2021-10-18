@@ -4,7 +4,16 @@ const moviesController = {
   getMovies: () => {
     try {
       return moviesService.getMoviesFromDatabase();
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  getMovieById: (id: number) => {
+    try {
+      return moviesService.getMovieByIdFromDatabase(id);
+    } catch (error) {
+      console.log(error);
+    }
   },
 };
 
