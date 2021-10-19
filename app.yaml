@@ -1,7 +1,9 @@
 runtime: nodejs
 env: flex
 service: cinematheque-back
-entrypoint: node ./dist/cinematheque-back/index.js
+network:
+  forwarded_ports:
+    - 3000
 manual_scaling:
   instances: 1
 resources:
