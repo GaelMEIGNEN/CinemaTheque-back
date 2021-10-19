@@ -17,4 +17,5 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           credentials: ${{ secrets.GCP_SA_KEY }}
-          deliverables: "./app.yaml"
+          working_directory: "./dist/cinematheque-back"
+          deliverables: "../../app.yaml"
