@@ -11,6 +11,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm install
+      - run: npm run build
       - id: Deploy
         uses: google-github-actions/deploy-appengine@main
         with:
