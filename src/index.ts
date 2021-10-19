@@ -1,5 +1,5 @@
 import server from "./server";
 
-const port = 3000;
+const port = 8080;
 
 server.listen(port, () => console.log(`Running on port ${port}`));
