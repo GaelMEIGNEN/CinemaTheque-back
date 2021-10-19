@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node ./dist/index.js",
-    "startDev": "nodemon --watch 'src/**/*' -e ts --exec 'npm start'",
+    "start": "npm run build && node ./dist/cinematheque-back/index.js",
+    "startDev": "nodemon --watch 'src/**/*' -e ts --exec 'npm start' && export GOOGLE_APPLICATION_CREDENTIALS='./secrets/hubvisory-game-25d60705a86d.json'",
     "test:watch": "jest --watchAll"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/bigquery": "^5.9.1",
     "axios": "^0.21.4",
     "express": "^4.17.1",
     "ts-jest": "^27.0.5",
