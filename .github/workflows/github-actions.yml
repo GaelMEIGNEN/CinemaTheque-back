@@ -4,12 +4,16 @@ jobs:
   DeployAppEngine:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/setup-gcloud@master
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup node
+        uses: actions/setup-node@v1
         with:
-          version: "290.0.1"
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+          node-version: 16.x
+      - run: npm install
       - id: Deploy
         uses: google-github-actions/deploy-appengine@main
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+          credentials: ${{ secrets.GCP_SA_KEY }}
+          deliverables: "./app.yaml"
