@@ -1,18 +1,9 @@
-runtime: python27
+runtime: nodejs16
 service: cinematheque-back
-threadsafe: yes
 handlers:
   - url: /(.*\.(gif|png|jpg|css|js)(|\.map))$
     static_files: dist/cinematheque-back/\1
     upload: dist/cinematheque-back/(.*)(|\.map)
   - url: /(.*)
-    static_files: dist/cinematheque-back/index.html
-    upload: dist/cinematheque-back/index.html
-skip_files:
-  - e2e/
-  - node_modules/
-  - src/
-  - ^(.*/)?\..*$
-  - ^(.*/)?.*\.md$
-  - ^(.*/)?.*\.yaml$
-  - ^LICENSE
+    static_files: dist/cinematheque-back/index.js
+    upload: dist/cinematheque-back/index.js
