@@ -1,6 +1,7 @@
 runtime: nodejs
 env: flex
 service: cinematheque-back
+entrypoint: node ./dist/cinematheque-back/index.js
 manual_scaling:
   instances: 1
 resources:
