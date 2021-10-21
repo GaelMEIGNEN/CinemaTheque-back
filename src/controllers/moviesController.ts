@@ -3,14 +3,14 @@ import { moviesService } from "../services/moviesService";
 const moviesController = {
   getMovies: () => {
     try {
-      return moviesService.getMoviesFromDatabase();
+      return moviesService.getMovies();
     } catch (error) {
       console.log(error);
     }
   },
   getMovieById: (id: number) => {
     try {
-      return moviesService.getMovieByIdFromDatabase(id);
+      return moviesService.getMovieById(id);
     } catch (error) {
       console.log(error);
     }
