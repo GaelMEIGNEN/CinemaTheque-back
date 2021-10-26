@@ -16,10 +16,8 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:id", async (req, res, next) => {
   try {
-    if (req.params.id && parseInt(req.params.id) >= 0) {
-      const movie = await moviesController.getMovieById(
-        parseInt(req.params.id)
-      );
+    if (req.params.id) {
+      const movie = await moviesController.getMovieById(req.params.id);
       res.header("Access-Control-Allow-Origin", "*").status(200).json(movie);
     }
   } catch (error) {

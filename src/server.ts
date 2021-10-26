@@ -3,9 +3,10 @@ import router from "./routes";
 
 const app = express();
 
-app.get("/", (req, res) => {
-  res.status(200).send("hello");
-});
-app.use("/", router);
+app.use("/api", router);
+// app.use("*", async (err, req, res, next) => {
+//   console.error(err);
+//   res.status(500);
+// });
 
 export default app;

@@ -1,13 +1,19 @@
-import conf from "./bigQueryConfiguration";
+import bigQueryConf from "./conf/bigQueryConfiguration";
+import mongoDBConf from "./conf/mongoDBConfiguration";
+import { MongoClient, ObjectId } from "mongodb";
 import { BigQuery } from "@google-cloud/bigquery";
 import { Actor } from "./actorsService";
 import { actorsService } from "./actorsService";
 
 const bigQuery = new BigQuery();
+const mongoDBClient = new MongoClient(mongoDBConf.uri);
 
 export const moviesService = {
-  getMovies: async (): Promise<Movie[]> => {
-    const query = `SELECT id, title, posterPath FROM \`${conf.moviesTable}\``;
+  /***********************************************************************
+   * BigQuery
+   ************************************************************************/
+  getMoviesFromBigQuery: async (): Promise<Movie[]> => {
+    const query = `SELECT id, title, posterPath FROM \`${bigQueryConf.moviesTable}\``;
     const options = {
       query: query,
       location: "US",
@@ -22,9 +28,9 @@ export const moviesService = {
 
     return rows;
   },
-  getMovieById: async (id: number): Promise<Movie> => {
+  getMovieByIdFromBigQuery: async (id: number): Promise<Movie> => {
     var actorsList: Actor[] = [];
-    const query = `SELECT * FROM \`${conf.moviesTable}\` WHERE id = @id LIMIT 1`;
+    const query = `SELECT m.id, m.title. FROM \`${bigQueryConf.moviesTable}\` m JOIN \`${bigQueryConf.actorsTable}\` a ON m.actorsId = a.id WHERE id = @id LIMIT 1`;
 
     const options = {
       query: query,
@@ -34,22 +40,26 @@ export const moviesService = {
 
     const [rows] = await job.getQueryResults();
 
-    if (rows[0]) {
-      if (rows[0].actorsId) {
-        const actors: string[] = rows[0].actorsId.split(";");
+    var movieJson = rows[0];
+    if (movieJson) {
+      if (movieJson.actorsId) {
+        const actors: string[] = movieJson.actorsId.split(";");
         const actorsId = actors
           .filter((actorId) => actorId.length > 0)
           .map((actorId) => parseInt(actorId));
-        actorsList = await actorsService.getActorsMinimalInformations(actorsId);
+        actorsList =
+          await actorsService.getActorsMinimalInformationsFromBigQuery(
+            actorsId
+          );
       }
     }
 
     return new Promise((resolve, reject) => {
-      if (rows[0]) {
-        const movie: Movie = rows[0];
+      if (movieJson) {
+        var movie: Movie = movieJson;
         resolve(
           new Movie(
-            movie.id,
+            movie._id,
             movie.title,
             "https://image.tmdb.org/t/p/w500/" + movie.posterPath,
             movie.releaseDate,
@@ -62,10 +72,59 @@ export const moviesService = {
       }
     });
   },
+
+  /************************************************************************
+   * MongoDB
+   ************************************************************************/
+
+  async getMoviesFromMongoDB(): Promise<Movie[]> {
+    await mongoDBClient.connect();
+
+    const result = (await mongoDBClient
+      .db()
+      .collection("movies")
+      .find()
+      .toArray()) as Movie[];
+
+    return result;
+  },
+
+  async getMovieByIdFromMongoDb(id: string): Promise<Movie> {
+    var actors: Actor[] = [];
+    await mongoDBClient.connect();
+    const result = await mongoDBClient
+      .db()
+      .collection("movies")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (result) {
+      actors = await actorsService.getActorsMinimalInformationsFromMongoDB(
+        result.actorsStarring
+      );
+    }
+
+    return new Promise((resolve, reject) => {
+      const movie: Movie = result as Movie;
+      if (result) {
+        resolve(
+          new Movie(
+            movie._id,
+            movie.title,
+            movie.overview,
+            movie.releaseDate,
+            "https://image.tmdb.org/t/p/w500/" + movie.posterPath,
+            actors
+          )
+        );
+      } else {
+        reject(`No movie found for id: ${id}`);
+      }
+    });
+  },
 };
 
 export class Movie {
-  id: string;
+  _id: string;
   title: string;
   posterPath: string;
   releaseDate: Date;
@@ -73,14 +132,14 @@ export class Movie {
   actorsStarring: Actor[];
 
   constructor(
-    id: string,
+    _id: string,
     title: string,
     posterPath: string,
     releaseDate: Date,
     overview: string,
     actorsStarring: Actor[]
   ) {
-    this.id = id;
+    this._id = _id;
     this.title = title;
     this.posterPath = posterPath;
     this.releaseDate = releaseDate;

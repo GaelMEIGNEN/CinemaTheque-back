@@ -1,11 +1,17 @@
-import conf from "./bigQueryConfiguration";
+import conf from "./conf/bigQueryConfiguration";
+import mongoDBConf from "./conf/mongoDBConfiguration";
+import { MongoClient, ObjectId } from "mongodb";
 import { BigQuery } from "@google-cloud/bigquery";
 import { Movie, moviesService } from "./moviesService";
 
 const bigQuery = new BigQuery();
+const mongoDBClient = new MongoClient(mongoDBConf.uri);
 
 export const actorsService = {
-  getActorsFromDatabase: async (): Promise<Actor[]> => {
+  /***********************************************************************
+   * BigQuery
+   ************************************************************************/
+  getActorsFromBigQuery: async (): Promise<Actor[]> => {
     const query = `SELECT * FROM ${conf.actorsTable}`;
     const options = {
       query: query,
@@ -18,7 +24,7 @@ export const actorsService = {
     return rows;
   },
 
-  async getActorById(id: Number): Promise<Actor> {
+  async getActorByIdFromBigQuery(id: Number): Promise<Actor> {
     const moviesList: Movie[] = [];
     const query = `SELECT * FROM ${conf.actorsTable} WHERE id = @id LIMIT 1`;
 
@@ -35,7 +41,9 @@ export const actorsService = {
       const movies: string[] = rows[0].moviesId.split(";");
 
       movies.forEach(async (movieId) => {
-        moviesList.push(await moviesService.getMovieById(parseInt(movieId)));
+        moviesList.push(
+          await moviesService.getMovieByIdFromBigQuery(parseInt(movieId))
+        );
       });
     }
 
@@ -44,7 +52,7 @@ export const actorsService = {
         const actor: Actor = rows[0];
         resolve(
           new Actor(
-            actor.id,
+            actor._id,
             actor.firstName,
             actor.lastName,
             actor.pictureUrl,
@@ -60,7 +68,9 @@ export const actorsService = {
   /*
    * From a list of id, finds minimal informations (id, firstName, lastName) about these actors
    */
-  async getActorsMinimalInformations(id: Number[]): Promise<Actor[]> {
+  async getActorsMinimalInformationsFromBigQuery(
+    id: Number[]
+  ): Promise<Actor[]> {
     const query = `SELECT id, firstName, lastName FROM ${conf.actorsTable} WHERE id IN UNNEST (@id)`;
 
     const options = {
@@ -74,23 +84,41 @@ export const actorsService = {
 
     return rows;
   },
+
+  /************************************************************************
+   * MongoDB
+   ************************************************************************/
+
+  async getActorsMinimalInformationsFromMongoDB(
+    ids: ObjectId[]
+  ): Promise<Actor[]> {
+    await mongoDBClient.connect();
+
+    const result = (await mongoDBClient
+      .db()
+      .collection("actors")
+      .find({ _id: { $in: ids } })
+      .toArray()) as Actor[];
+
+    return result;
+  },
 };
 
 export class Actor {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   pictureUrl: string;
   starredIn: Movie[];
 
   constructor(
-    id: string,
+    _id: string,
     firstName: string,
     lastName: string,
     pictureUrl: string,
     starredIn: Movie[]
   ) {
-    this.id = id;
+    this._id = _id;
     this.firstName = firstName;
     this.lastName = lastName;
     this.pictureUrl = pictureUrl;

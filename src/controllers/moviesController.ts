@@ -1,16 +1,19 @@
 import { moviesService } from "../services/moviesService";
+import { ObjectId } from "mongodb";
 
 const moviesController = {
   getMovies: () => {
     try {
-      return moviesService.getMovies();
+      // return moviesService.getMoviesFromBigQuery();
+      return moviesService.getMoviesFromMongoDB();
     } catch (error) {
       console.log(error);
     }
   },
-  getMovieById: (id: number) => {
+  getMovieById: (id: string) => {
     try {
-      return moviesService.getMovieById(id);
+      // return moviesService.getMovieByIdFromBigQuery(id);
+      return moviesService.getMovieByIdFromMongoDb(id);
     } catch (error) {
       console.log(error);
     }
