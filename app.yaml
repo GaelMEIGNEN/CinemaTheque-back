@@ -1,4 +1,4 @@
-runtime: nodejs
+runtime: nodejs16
 service: cinematheque-back
 manual_scaling:
   instances: 1
